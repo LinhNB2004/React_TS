@@ -2,170 +2,120 @@ import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
+import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { useForm } from "react-hook-form";
+import Joi from "joi";
 
-interface ITodo {
-  id?: number | string;
+interface IProduct {
+  id: number;
   title: string;
-  complete: boolean;
+  price: number;
+  image: string;
+  category: string;
 }
+type formType = {
+  title: string;
+  image: string;
+  price: number;
+  category: string;
+};
 
 function App() {
-  const [todos, setTodo] = useState<ITodo[]>([]);
-  const [newtodo, setNewtodo] = useState("");
-  const [editTodoId, setEditTodoId] = useState<string | number | null>(null);
-  const [editTitle, setEditTitle] = useState("");
+  const [products, setProducts] = useState<IProduct[]>([]);
 
-  // Load dữ liệu ra
+  const {
+    register,
+    handleSubmit, // là một hàm để xử lý sự kiện gửi form.
+    reset,
+  } = useForm<formType>({});
   useEffect(() => {
-    fetch("http://localhost:3000/todo")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        setTodo(data);
-      });
+    (async () => {
+      const { data } = await axios.get("http://localhost:3000/products");
+      // console.log(data);
+      setProducts(data);
+    })();
   }, []);
-
-  // Thêm mới
-  const handleClickAdd = () => {
-    const data: ITodo = {
-      title: newtodo,
-      complete: true,
-    };
-    fetch("http://localhost:3000/todo", {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((response) => response.json())
-      .then((data: ITodo) => {
-        setTodo([...todos, data]);
-        setNewtodo(""); // Đặt lại giá trị của newtodo thành chuỗi rỗng
-        alert("Thêm mới thành công");
-      });
-  };
-
-  // Lấy giá trị của ô input thêm mới
-  const Set_new_todo = (value: any) => {
-    setNewtodo(value);
-  };
-
-  // Lấy giá trị của ô input khi chỉnh sửa
-  const Set_edit_title = (value: any) => {
-    setEditTitle(value);
-  };
-
-  // Xóa
-  const onDelete = (id: any) => {
-    if (confirm("Are you sure you want to delete")) {
-      fetch("http://localhost:3000/todo/" + id, {
-        method: "DELETE",
-      })
-        .then((response) => response.json())
-        .then((data: ITodo) => {
-          const newtodos = todos.filter((todo) => todo.id !== id);
-          setTodo(newtodos);
-          alert("Xóa thành công");
-        });
+  const onSubmit = async (formData: any) => {
+    // console.log(data);
+    try {
+      const { data } = await axios.post(
+        "http://localhost:3000/products",
+        formData
+      );
+      setProducts([...products, data]);
+      reset();
+    } catch (error) {
+      console.log(error);
     }
   };
-
-  // Bắt đầu chỉnh sửa
-  const changeStatus = (id: any) => {
-    setEditTodoId(id);
-    const todoToEdit = todos.find((todo) => todo.id === id);
-    if (todoToEdit) {
-      setEditTitle(todoToEdit.title);
-    }
-  };
-
-  // Cập nhật
-  const updateTodo = (id: any) => {
-    const todoToUpdate = todos.find((todo) => todo.id == id);
-    if (todoToUpdate) {
-      const updatedTodo = { ...todoToUpdate, title: editTitle, complete: true };
-      fetch(`http://localhost:3000/todo/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(updatedTodo),
-        headers: { "Content-Type": "application/json" },
-      })
-        .then((response) => response.json())
-        .then((data: ITodo) => {
-          const newtodos = todos.map((todo) => (todo.id === id ? data : todo));
-          setTodo(newtodos);
-          setEditTitle(""); // Đặt lại giá trị của editTitle thành chuỗi rỗng
-          setEditTodoId(null); // Kết thúc chỉnh sửa
-          alert("Cập nhật thành công");
-        });
-    }
-  };
-
   return (
     <>
-      <div className="box">
-        <div className="box1">
-          <h2>Ahihi</h2>
-          <div className="nd">
-            <input
-              type="text"
-              value={newtodo}
-              onChange={(e) => Set_new_todo(e.target.value)}
-            />
-            <button className="them" onClick={handleClickAdd}>
-              Thêm danh sách
-            </button>
-
-            {/* Hiển thị danh sách Todo */}
-
-            <ul>
-              {todos.map((todo: ITodo) =>
-                todo.complete && editTodoId !== todo.id ? (
-                  <li key={todo.id} className="dl">
-                    {todo.title}
-                    <button
-                      className="bt"
-                      onClick={() => changeStatus(todo.id)}
-                    >
-                      Sửa
-                    </button>
-                    <button className="bt" onClick={() => onDelete(todo.id)}>
-                      Xóa
-                    </button>
-                  </li>
-                ) : (
-                  <li key={todo.id}>
-                    <input
-                      className="edit"
-                      type="text"
-                      value={todo.id === editTodoId ? editTitle : todo.title}
-                      onChange={(e) => {
-                        if (todo.id === editTodoId) {
-                          Set_edit_title(e.target.value);
-                        }
-                      }}
-                    />
-                    {todo.id === editTodoId ? (
-                      <>
-                        <button
-                          className="bt"
-                          onClick={() => updateTodo(todo.id)}
-                        >
-                          Lưu
-                        </button>
-                        <button
-                          className="bt"
-                          onClick={() => setEditTodoId(null)}
-                        >
-                          Hủy
-                        </button>
-                      </>
-                    ) : null}
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
+      <div className="content">
+        <div className="div1">
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="form-group  ">
+              <input
+                className="form-control input"
+                type="text"
+                {...register("title")}
+                placeholder="Title"
+              />
+              <input
+                className="form-control input"
+                type="text"
+                {...register("price")}
+                placeholder="price"
+              />
+              <input
+                className="form-control input"
+                type="text"
+                {...register("image")}
+                placeholder="image"
+              />
+              <input
+                className="form-control input"
+                type="text"
+                {...register("category")}
+                placeholder="category"
+              />
+              <button type="submit">Thêm Sản Phẩm</button>
+            </div>
+          </form>
+        </div>
+        <div className="div2">
+          <table className="table ">
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Title</th>
+                <th>Price</th>
+                <th>Image</th>
+                <th>Category</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((product: IProduct, index) => (
+                <tr key={product.id}>
+                  <td>{index + 1}</td>
+                  <td>{product.title}</td>
+                  <td>{product.price}</td>
+                  <td>
+                    <img width={100} src={product.image} alt="image" />
+                  </td>
+                  <td>{product.category}</td>
+                  <td>
+                    <button className="btn btn-warning">Sửa</button>
+                    <button className="btn btn-danger"> Xóa</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
+      ;
     </>
   );
 }
