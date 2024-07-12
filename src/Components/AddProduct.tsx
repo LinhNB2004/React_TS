@@ -5,34 +5,16 @@ import axios from "axios";
 
 type Props = {
   title: string;
-  products: IProduct[];
-  setProducts: (data: IProduct[]) => void;
+  onAdd: (data: formType) => void;
 };
-type formType = Pick<IProduct, "title" | "price" | "image" | "category">;
+type formType = Pick<IProduct, "title" | "price" | "image" | "category">; // Pick(Từ Đâu, lấy thành phần cần lấy)
 
-const AddProduct = ({ title, products, setProducts }: Props) => {
-  const {
-    register,
-    handleSubmit, // là một hàm để xử lý sự kiện gửi form.
-    reset,
-  } = useForm<formType>({});
-
-  //ADD
+const AddProduct = ({ title, onAdd }: Props) => {
+  const { register, handleSubmit, reset } = useForm<formType>();
   const onSubmit = async (formData: any) => {
-    // console.log(data);
-    try {
-      const { data } = await axios.post(
-        "http://localhost:3000/products",
-        formData
-      );
-      setProducts([...products, data]);
-      alert("Thêm sp thành công");
-      reset();
-    } catch (error) {
-      console.log(error);
-    }
+    onAdd(formData);
+    reset();
   };
-
   return (
     <div className="div1">
       {title}

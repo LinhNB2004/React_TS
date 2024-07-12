@@ -7,37 +7,20 @@ type formType = Pick<IProduct, "title" | "price" | "image" | "category">;
 
 type Props = {
   product: IProduct;
-  products: IProduct[];
-  setProducts: (products: IProduct[]) => void; //hàm dùng để cập nhật danh sách sản phẩm.
-  setFlag: (value: string | number) => void;
+  onUpdate: (data: formType) => void;
+  setFlag: (id: string | number) => void;
 };
-
-const UpdateProduct = ({ product, products, setProducts, setFlag }: Props) => {
+const UpdateProduct = ({ product, onUpdate, setFlag }: Props) => {
   const { register, handleSubmit, reset } = useForm<formType>({
     defaultValues: {
       title: product.title,
-      price: product.price,
       image: product.image,
+      price: product.price,
       category: product.category,
     },
   });
-
-  const onSubmitUpdate = async (formData: formType) => {
-    try {
-      const { data } = await axios.put(
-        `http://localhost:3000/products/${product.id}`,
-        formData
-      );
-      const updatedProducts = products.map((prod) =>
-        prod.id === product.id ? data : prod
-      );
-      setProducts(updatedProducts);
-      setFlag(0);
-      reset();
-      alert("Update sp thành công");
-    } catch (error) {
-      console.log(error);
-    }
+  const onSubmitUpdate = (product: formType) => {
+    onUpdate(product);
   };
 
   return (

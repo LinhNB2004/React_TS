@@ -38,10 +38,10 @@
   ],
   "products": [
     {
-      "title": "Áo thun nam222",
-      "price": "250000",
+      "title": "Áo thun nam",
       "image": "https://i.pinimg.com/474x/b2/98/37/b298372dff472028a6918df21a3a634b.jpg",
-      "category": "Thời trang222",
+      "price": "250000",
+      "category": "Thời trang",
       "id": 1
     },
     {
