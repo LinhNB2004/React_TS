@@ -1,12 +1,18 @@
-import { useEffect, useState } from "react";
-import "./App.css";
 import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { IProduct } from "./interface/Product";
-import AddProduct from "./Components/AddProduct";
-import UpdateProduct from "./Components/UpdateProduct";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import CustomElement from "./Components/Button";
+import { useRoutes } from "react-router-dom";
+import "./App.css";
+import Dashboard from "./layout/Dashboard";
+import Detail from "./Components/Detail";
+import Home from "./Components/Home";
+import Products from "./Components/Products";
+import { IProduct } from "./interface/Product";
+import client from "./layout/client";
+import countcontext from "./contexts/countcontext";
+import Privaterouter from "./privaterouter";
+import Countcontext from "./contexts/countcontext";
+import Client from "./layout/client";
 
 type formType = Pick<IProduct, "title" | "price" | "image" | "category">; // Pick(Từ Đâu, lấy thành phần cần lấy)
 
@@ -87,75 +93,42 @@ function App() {
       category: product[0].category,
     });
   };
-  return (
-    <div className="content">
-      {/* <button onClick={() => setClick(!click)}>Giỏ hàng</button> */}
-      {/* <Sidebar isActive={click}/> */}
-      {/* <h2>
-        Đây là button{" "}
-        <CustomElement el="button" title="Xem thêm" type="submit" />
-      </h2>
-      <h2>
-        Đây là thẻ a{" "}
-        <CustomElement
-          el="anchor"
-          title="Xem thêm"
-          href="https://google.com"
-          target="_blank"
-        />
-      </h2> */}
-      <AddProduct title="Thêm sản phẩm mới" onAdd={onAdd} />
-      <div className="div2">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>STT</th>
-              <th>Title</th>
-              <th>Price</th>
-              <th>Image</th>
-              <th>Category</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product, index) =>
-              product.id === flag ? (
-                <UpdateProduct
-                  product={product}
-                  onUpdate={onSubmitUpdate}
-                  setFlag={setFlag}
-                />
-              ) : (
-                <tr key={product.id}>
-                  <td>{index + 1}</td>
-                  <td>{product.title}</td>
-                  <td>{product.price}</td>
-                  <td>
-                    <img width={100} src={product.image} alt={product.title} />
-                  </td>
-                  <td>{product.category}</td>
-                  <td>
-                    <button
-                      className="btn btn-warning"
-                      onClick={() => onEdit(product.id)}
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => onDelete(product.id)}
-                    >
-                      Xóa
-                    </button>
-                  </td>
-                </tr>
-              )
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+  const routes = useRoutes([
+    {
+      path: "",
+      element: (
+        <Countcontext>
+          <Client />
+        </Countcontext>
+      ),
+      children: [
+        { path: "home", element: <Home products={products} /> },
+        { path: "detail", Component: Detail },
+      ],
+    },
+    {
+      path: "dashboard",
+      element: (
+        <Privaterouter userID={2}>
+          <Dashboard />
+        </Privaterouter>
+      ),
+      children: [{ path: "product", Component: Products }],
+    },
+  ]);
+  return routes;
+  // return (
+  //   <>
+  //     <Routes>
+  //       <Route path="/" Component={home} />
+  //       <Route path="edit" Component={EditProduct} />
+  //       <Route path="detail" Component={Detail} />
+  //       <Route path="dashboard" Component={Dashboard}>
+  //         <Route path="product" Component={ProductList} />
+  //       </Route>
+  //     </Routes>
+  //   </>
+  // );
 }
 
 export default App;
